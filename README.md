@@ -10,10 +10,6 @@ As part of their paper, the authors have made available [a web portal](https://b
 
 For more information, please look at the included simple examples that look for single nucleotide variants of the reference sequences of important antibiotic resistance genes, OXA-1 and MCR-1
 
-## Example
-
-The [a web portal](https://bigsi.io) and preprint look for how many occurences of hte 
-
 ## Pre-requisites
 
 The following Python modules are required. The versions shown are those used in development; earlier versions may work but please exercise caution. The code is Python3 and was written using version 3.5.
