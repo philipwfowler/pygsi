@@ -136,6 +136,10 @@ class NucleotideStretch():
             self.arrays["number_reference_genomes"]=data[()]["arr_number_reference_genomes"]
             self.arrays["number_nucleotide_changes"]=data[()]["arr_number_nucleotide_changes"]
 
+            # now that all the arrays are loaded, re-create the Pandas dataframe (bit hacky)
+            self._create_dataframe()
+
+
     def save(self,filename):
         """ Save all the variables and arrays belonging to the class. This allows the instance to be re-created
         by using the load() method"""

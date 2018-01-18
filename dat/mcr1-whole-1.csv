@@ -1,0 +1,13 @@
+,amino_acid_position,mutation,new_amino_acid,new_triplet,non_synonymous,number_genomes,number_nucleotide_changes,number_reference_genomes,original_amino_acid,original_triplet,synonymous
+0,132,L132F,F,ttt,True,1,1,166,L,ttg,False
+1,158,L158F,F,ttt,True,1,1,166,L,ttg,False
+2,319,L319F,F,ttt,True,1,1,166,L,ttg,False
+3,150,W150L,L,ttg,True,1,1,166,W,tgg,False
+4,296,L296L,L,ctt,False,1,1,166,L,ctg,True
+5,470,L470L,L,ctt,False,1,1,166,L,ctg,True
+6,43,P43P,P,cca,False,1,1,166,P,ccc,True
+7,152,K152N,N,aat,True,1,1,166,K,aag,False
+8,391,Q391K,K,aaa,True,1,1,166,Q,caa,False
+9,202,V202V,V,gtt,False,1,1,166,V,gtg,True
+10,88,A88A,A,gct,False,1,1,166,A,gcg,True
+11,420,A420A,A,gca,False,1,1,166,A,gcc,True
