@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-from __future__ import print_function # in case we use python2
-
 import pygsi
 from tqdm import tqdm
 
@@ -14,17 +12,16 @@ last_nucleotide_position=len(oxa1_sequence)
 print("OXA1 is %i bases long" % len(oxa1_sequence))
 
 # create an instance of the class by giving it the nucleotide sequence as a string
+# by setting species=None, all results will be considered
 oxa1=pygsi.NucleotideStretch(nucleotide_sequence=oxa1_sequence,\
                              gene_name="oxa1",\
                              first_amino_acid_position=1,\
                              species_name=None)
 
-
 # let's have a look at the summary
 print(oxa1)
 
-# for position in tqdm(range(10,267)):
-for position in tqdm(range(100,104)):
+for position in tqdm(range(228,245)):
     for i in [1,2,3]:
         oxa1.permuate_position(position,triplet_position=i)
 
