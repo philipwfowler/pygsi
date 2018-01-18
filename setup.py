@@ -2,11 +2,11 @@ from distutils.core import setup
 
 setup(
     install_requires=[
-        "numpy",
-        "json",
-        "requests",
-        "pandas",
-        "tqdm"
+        "numpy >= 1.13",
+        "json >= 2.09",
+        "requests >= 2.8",
+        "pandas >= 0.21.0",
+        "tqdm >= 4.19"
     ],
     name='pygsi',
     version='0.1.0',
