@@ -5,7 +5,8 @@ setup(
         "numpy",
         "json",
         "requests",
-        "pandas"
+        "pandas",
+        "tqdm"
     ],
     name='pygsi',
     version='0.1.0',
