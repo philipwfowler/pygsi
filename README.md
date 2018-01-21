@@ -6,7 +6,7 @@ As discussed in the preprint below, whilst the Short Read Archive (SRA) holds ne
 
 This citation will be updated when this paper is published.
 
-As part of their paper, the authors have made available [a web portal](https://bigsi.io), allowing individual nucleotide strings to be entered, with the results returned in a few seconds. This Python3 class allows this website to be interrogated programmatically, allowing one to systematically study the universe of small variations of the original nucleotide sequence X. Specifically, through the permuate_positions() method, sequences with the three alternative nucleotides substituted can be queried against the BIGSI instance, allowing for example, all sequences with one SNP to be identified. Alternatively, the other 63 triplets from the codon table can be tried at each position.
+As part of their paper, the authors have made available [a web portal](https://bigsi.io), allowing individual nucleotide strings to be entered, with the results returned in a few seconds. This Python3 class allows this website to be interrogated programmatically, allowing one to systematically study the universe of small variations of the original nucleotide sequence X. Specifically, through the `permuate_positions()` method of the `NucleotideSequence` class, sequences with the three alternative nucleotides substituted can be queried against the BIGSI instance, allowing for example, all sequences with one SNP to be identified. Alternatively, the other 63 triplets from the codon table can be tried at each position. 
 
 ## Examples
 
@@ -38,13 +38,12 @@ Alternatively, to install system-wide
 
 ## Pre-requisites
 
-The setup.py script will automatically install the following Python modules. At present setup.py specifies minimum versions loosely based on those below. It is likely to work with earlier versions, but please exercise caution and you will need to edit the setup.py file to remove the version restriction. The code is Python3 and was written and tested using version 3.5 on a Mac.
+The `setup.py` script will automatically install the following Python modules. At present `setup.py` specifies minimum versions loosely based on those below. It is likely to work with earlier versions, but please exercise caution and you will need to edit the `setup.py` file to remove the version restriction. The code is `Python3` and was written and tested using version 3.5 on a Mac.
 
-- json (2.09)
-- requests (2.8.14)
-- numpy (1.13.3)
-- pandas (0.21.0)
-- tqdm (4.19.4, optional i.e. not part of the pygsi module but is used in the included OXA-1 example and besides, I like it.)
+- `requests` (2.8.14)
+- `numpy` (1.13.3)
+- `pandas` (0.21.0)
+- `tqdm` (4.19.4, not strictly part of the pygsi module but is used in the included OXA-1 example and besides, I like it.)
 
 
 
