@@ -21,7 +21,7 @@ Whilst to run the latter you need to have jupyter installed
      
 and a window will be opened in your browser with the code.     
 
-## Installation
+## Installation
 
 Download or clone the repository
 
