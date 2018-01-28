@@ -71,6 +71,7 @@ class NucleotideStretch():
 
             # now interrogate the bigsi web instance to see how many genomes exist with the specified reference sequence
             # (this can take 5-10 seconds)
+            print("Interogating BIGSI")
             self.number_reference_genomes=self._interrogate_bigsi(nucleotide_sequence)
 
             # instantiate the arrays dictionary that is going to hold all the numpy 2D arrays (this maybe could be done with pandas)
@@ -287,7 +288,6 @@ class NucleotideStretch():
 
         # define the URL of the BIGSI instance
 
-        # url_front="http://api.cbgseq.com/search?seq="
         url_front="http://www.bigsi.io/search?seq="
         url_end="&threshold=1.0"
 
