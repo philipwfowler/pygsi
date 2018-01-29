@@ -288,6 +288,7 @@ class NucleotideStretch():
 
         # define the URL of the BIGSI instance
 
+        # url_front="http://api.cbgseq.com/search?seq="
         url_front="http://www.bigsi.io/search?seq="
         url_end="&threshold=1.0"
 
