@@ -287,14 +287,12 @@ class NucleotideStretch():
         sra_samples=[]
 
         # define the URL of the BIGSI instance
-
-        # url_front="http://api.cbgseq.com/search?seq="
         url_front="http://www.bigsi.io/search?seq="
         url_end="&threshold=1.0"
 
         query_string=nucleotides_string.upper()
 
-        print(query_string)
+        print(url_front+query_string+url_end)
 
         # call the Web API
         r=requests.get(url_front+query_string+url_end)
