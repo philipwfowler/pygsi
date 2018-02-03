@@ -71,7 +71,6 @@ class NucleotideStretch():
 
             # now interrogate the bigsi web instance to see how many genomes exist with the specified reference sequence
             # (this can take 5-10 seconds)
-            print("Interogating BIGSI")
             self.number_reference_genomes=self._interrogate_bigsi(nucleotide_sequence)
 
             # instantiate the arrays dictionary that is going to hold all the numpy 2D arrays (this maybe could be done with pandas)
@@ -291,8 +290,6 @@ class NucleotideStretch():
         url_end="&threshold=1.0"
 
         query_string=nucleotides_string.upper()
-
-        print(url_front+query_string+url_end)
 
         # call the Web API
         r=requests.get(url_front+query_string+url_end)
