@@ -286,7 +286,7 @@ class NucleotideStretch():
         sra_samples=[]
 
         # define the URL of the BIGSI instance
-        url_front="http://api.bigsi.io/search?seq="
+        url_front="http://www.bigsi.io/search?seq="
         url_end="&threshold=1.0"
 
         query_string=nucleotides_string.upper()
