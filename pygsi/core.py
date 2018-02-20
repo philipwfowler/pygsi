@@ -167,6 +167,7 @@ class NucleotideStretch():
         # save the dictionary to the specified file
         numpy.save(filename, data)
 
+
     def __repr__(self):
         """ Change so that the print() function outputs a summary of the instance.
         """
