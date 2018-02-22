@@ -8,7 +8,7 @@ import pandas
 class NucleotideStretch():
 
     """ The NucleotideStretch class accepts a nucleotide sequence as a string and then allows you to ask the SRA how many of
-    each (amino-acid based) permutation there are.
+    each (amino-acid based) permutation there are using the developmental BIGSI webserver.
 
     Args:
         nucleotide_sequence (str): nucleotide sequence containing only (a,t,c,g). Can be upper- or lower-case. Must be divisible by three.
@@ -16,10 +16,17 @@ class NucleotideStretch():
         gene_name (str): name of the gene. Metadata, not used in search. (optional)
         species_name (str) and species_min_amount (float): only results that are predicted by Bracken to have at least this amount (range 0-1) of the
             specified species will be included. Defaults are None and 0.80 (i.e. 80%). A species_name of None means all results are included.
-        first_amino_acid_position (int): the number of the first amino acid encoded by nucleotide_sequence (default is 0)
+        first_amino_acid_position (int): the number of the first amino acid encoded by nucleotide_sequence (default is 1)
+
+    Important:
+        if you wish to find all the sequences with one amino acid difference, you must either (i) provide the nucleotide sequence for amino acids -9 to N+10 or (ii) if you
+        only give the nucleotide sequence for the CDS, then you are restricted to examining 11<residues<N-10. This is because the code iteratively examines the variation in a single triplet,
+        flanked by 30 bases on either side. If the 30 flanking bases are not present (for example if you try interrogating position 1 but haven't provided the sequence down to the equivalent
+        amino acid position of -9), then BIGSI will return false positives. The other implication of using a 63-kmer is that you are implicitly assuming that all mutations are greather
+        than 30 bases apart, which may not be the case i.e. unless you explicitly look for them, the approach is blind to double mutations separated by 10 or fewer amino acids.
     """
 
-    def __init__(self,filename=None,nucleotide_sequence=None,gene_name=None,species_name=None,species_min_amount=0.80,first_amino_acid_position=0):
+    def __init__(self,filename=None,nucleotide_sequence=None,gene_name=None,species_name=None,species_min_amount=0.80,first_amino_acid_position=1):
 
         # insist that either a filename or a nucleotide sequence is specified (and NOT both)
         assert (filename or nucleotide_sequence), "either a nucleotide sequence must be given as a string, or the filename of a .npy containing saved results"
@@ -91,7 +98,6 @@ class NucleotideStretch():
             tmp=numpy.core.defchararray.add(self.arrays["original_amino_acid"],self.arrays["amino_acid_position"].astype(str))
             foo=numpy.core.defchararray.add(tmp,self.arrays["new_amino_acid"])
             self.arrays["mutation"]=numpy.where(self.arrays["original_triplet"]!=self.arrays["new_triplet"],foo,"-")
-
 
             # construct simple Boolean arrays
             self.arrays["synonymous"]=(self.arrays["original_amino_acid"]==self.arrays["new_amino_acid"])
@@ -230,7 +236,7 @@ class NucleotideStretch():
 
             permutations=['a','c','t','g']
 
-            # don't consider the original nucleotide
+            # only consider the original triplet once
             if triplet_position in (1,3):
                  permutations.remove(nucleotide_original)
 
@@ -247,8 +253,6 @@ class NucleotideStretch():
 
             # codons is a numpy array, so convert to a list so that remove will work
             permutations=self.codons.tolist()
-
-            # permutations.remove(triplet_original)
 
         first_pass=True
 
@@ -278,7 +282,7 @@ class NucleotideStretch():
             row=numpy.where(self.codons==new_triplet)[0][0]
 
             # if total>0:
-            #     print(nucleotides_before,new_sequence,nucleotides_after,triplet_idx+1-10,original_triplet,new_triplet,row,total,len(query_sequence))
+            #     print(nucleotides_before,new_sequence,nucleotides_after,aminoacid_number, triplet_idx, nucleotide_idx,triplet_idx+1-10,original_triplet,new_triplet,row,total,len(query_sequence))
 
             # store the number of sequences in the final 2D array
             self.arrays["number_genomes"][(row,triplet_idx)]=total
@@ -309,12 +313,8 @@ class NucleotideStretch():
 
         query_string=nucleotides_string.upper()
 
-        # print(url_front+query_string+url_end)
-
         # call the Web API
         r=requests.get(url_front+query_string+url_end)
-
-        # print(r.text)
 
         # parse the returned data
         result=json.loads(r.text)
