@@ -16,6 +16,33 @@ It is important to know at a high level how the BIGSI index is interrogated as t
 
 where '-' is a flanking base and 'o' is a base we are going to permute. An immediate consequence of this is that if you wish to examine the variation at the first residue in the protein sequence, then the nucleotide sequence must start 30 bases before the first residue (and end 30 bases afterwards). If you do not, then a shorter kmer will be passed to BIGSI (which has a minimum kmer length of 61 bases) and many false positives will be reported.  
 
+Consider a trivial case where we wish to find out all the single amino acid (i.e. single triplet) differences in a stretch of 12 amino acids i.e. (amino acid pos 1-12 incl, or bases 1-36). We therefore need to provide pygsi with amino acids -9 to 22 incl. (bases -29 to 66) and so the first fishing sequence is
+
+     base#                                  1         2         3
+                                   123456789012345678901234567890123456
+     ------------------------------ooo------------------------------................................
+
+where '.' is a nucleotide that is not included in the fishing sequence defined by '-' and 'o' and we can find all variation using the permute_position() method of the pygsi class. Then we move on to consider the second amino acid position
+
+     base#                                  1         2         3
+                                   123456789012345678901234567890123456
+     ...------------------------------ooo------------------------------..............................
+
+and then the third
+
+     base#                                  1         2         3
+                                   123456789012345678901234567890123456
+     ......------------------------------ooo------------------------------...........................
+
+all the way up to the twelth
+
+     base#                                  1         2         3
+                                   123456789012345678901234567890123456
+     ......------------------------------ooo------------------------------...........................
+     .................................------------------------------ooo------------------------------
+
+The other important consequence of fishing with a 63-kmer is that the approach is blind to double mutations that are both covered by the 63-kmer i.e. separated by twenty one or fewer amino acids, hence it cannot detect any double mutations in our test sequence as it is too short.
+
 ## Examples
 
 For more information, please look at the included simple example that look for single nucleotide variants of the reference sequence of the important antibiotic resistance gene OXA-1. Simple python and Jupyter Notebook forms are included. To run the former:
