@@ -43,9 +43,10 @@ all the way up to the twelth
 
 The other important consequence of fishing with a 63-kmer is that the approach is blind to double mutations that are both covered by the 63-kmer i.e. separated by twenty one or fewer amino acids, hence it cannot detect any double mutations in our test sequence as it is too short.
 
-## Examples
 
-For more information, please look at the included simple example that look for single nucleotide variants of the reference sequence of the important antibiotic resistance gene OXA-1. Simple python and Jupyter Notebook forms are included. To run the former:
+## Examples
+
+For more information, please look at the included simple example that look for single nucleotide variants of the reference sequence of the important antibiotic resistance gene OXA-1. Simple commented python and Jupyter Notebook forms are included. To run the former:
 
      $ cd examples/ 
      $ python analyse-oxa1-variants.py 
@@ -54,7 +55,7 @@ Whilst to run the latter you need to have jupyter installed
 
      $ jupyter-notebook analyse-oxa1-variants.ipynb
      
-and a window will be opened in your browser with the code.     
+and a window will be opened in your browser with the code. All the output files are written to examples/dat. It is easiest to look at the output by loading the CSV file into a spreadsheet package like Microsoft Excel or Apple Numbers.
 
 ## Installation
 
