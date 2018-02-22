@@ -38,7 +38,6 @@ all the way up to the twelth
 
      base#                                  1         2         3
                                    123456789012345678901234567890123456
-     ......------------------------------ooo------------------------------...........................
      .................................------------------------------ooo------------------------------
 
 The other important consequence of fishing with a 63-kmer is that the approach is blind to double mutations that are both covered by the 63-kmer i.e. separated by twenty one or fewer amino acids, hence it cannot detect any double mutations in our test sequence as it is too short.
