@@ -8,7 +8,7 @@ import pandas
 class NucleotideStretch():
 
     """ The NucleotideStretch class accepts a nucleotide sequence as a string and then allows you to ask the SRA how many of
-    each (amino-acid based) permutation there are.
+    each (amino-acid based) permutation there are using the developmental BIGSI webserver.
 
     Args:
         nucleotide_sequence (str): nucleotide sequence containing only (a,t,c,g). Can be upper- or lower-case. Must be divisible by three.
@@ -16,10 +16,17 @@ class NucleotideStretch():
         gene_name (str): name of the gene. Metadata, not used in search. (optional)
         species_name (str) and species_min_amount (float): only results that are predicted by Bracken to have at least this amount (range 0-1) of the
             specified species will be included. Defaults are None and 0.80 (i.e. 80%). A species_name of None means all results are included.
-        first_amino_acid_position (int): the number of the first amino acid encoded by nucleotide_sequence (default is 0)
+        first_amino_acid_position (int): the number of the first amino acid encoded by nucleotide_sequence (default is 1)
+
+    Important:
+        if you wish to find all the sequences with one amino acid difference, you must either (i) provide the nucleotide sequence for amino acids -9 to N+10 or (ii) if you
+        only give the nucleotide sequence for the CDS, then you are restricted to examining 11<residues<N-10. This is because the code iteratively examines the variation in a single triplet,
+        flanked by 30 bases on either side. If the 30 flanking bases are not present (for example if you try interrogating position 1 but haven't provided the sequence down to the equivalent
+        amino acid position of -9), then BIGSI will return false positives. The other implication of using a 63-kmer is that you are implicitly assuming that all mutations are greather
+        than 30 bases apart, which may not be the case i.e. unless you explicitly look for them, the approach is blind to double mutations separated by 10 or fewer amino acids.
     """
 
-    def __init__(self,filename=None,nucleotide_sequence=None,gene_name=None,species_name=None,species_min_amount=0.80,first_amino_acid_position=0):
+    def __init__(self,filename=None,nucleotide_sequence=None,gene_name=None,species_name=None,species_min_amount=0.80,first_amino_acid_position=1):
 
         # insist that either a filename or a nucleotide sequence is specified (and NOT both)
         assert (filename or nucleotide_sequence), "either a nucleotide sequence must be given as a string, or the filename of a .npy containing saved results"
@@ -81,7 +88,7 @@ class NucleotideStretch():
             self.arrays["amino_acid_position"]=(numpy.broadcast_to(self.amino_acid_position,(self.number_codons,self.number_amino_acids)))
             self.arrays["new_amino_acid"]=(numpy.rot90(numpy.broadcast_to(self.amino_acids_of_codons,(self.number_amino_acids,self.number_codons)),3))
             self.arrays["number_genomes"]=numpy.zeros((self.number_codons,self.number_amino_acids),dtype=int)
-            self.arrays["number_reference_genomes"]=self.number_reference_genomes*numpy.ones((self.number_codons,self.number_amino_acids),dtype=int)
+            # self.arrays["number_reference_genomes"]=self.number_reference_genomes*numpy.ones((self.number_codons,self.number_amino_acids),dtype=int)
 
             # triplets here means the triplet encoding the original amino acid, whilst codons is all 64 possibilities
             self.arrays["original_triplet"]=numpy.broadcast_to(self.triplets,(self.number_codons,self.number_amino_acids))
@@ -91,7 +98,6 @@ class NucleotideStretch():
             tmp=numpy.core.defchararray.add(self.arrays["original_amino_acid"],self.arrays["amino_acid_position"].astype(str))
             foo=numpy.core.defchararray.add(tmp,self.arrays["new_amino_acid"])
             self.arrays["mutation"]=numpy.where(self.arrays["original_triplet"]!=self.arrays["new_triplet"],foo,"-")
-
 
             # construct simple Boolean arrays
             self.arrays["synonymous"]=(self.arrays["original_amino_acid"]==self.arrays["new_amino_acid"])
@@ -133,7 +139,6 @@ class NucleotideStretch():
             self.arrays["original_triplet"]=data[()]["arr_original_triplet"]
             self.arrays["new_triplet"]=data[()]["arr_new_triplet"]
             self.arrays["number_genomes"]=data[()]["arr_number_genomes"]
-            self.arrays["number_reference_genomes"]=data[()]["arr_number_reference_genomes"]
             self.arrays["number_nucleotide_changes"]=data[()]["arr_number_nucleotide_changes"]
 
             # now that all the arrays are loaded, re-create the Pandas dataframe (bit hacky)
@@ -166,6 +171,7 @@ class NucleotideStretch():
 
         # save the dictionary to the specified file
         numpy.save(filename, data)
+
 
     def __repr__(self):
         """ Change so that the print() function outputs a summary of the instance.
@@ -217,14 +223,22 @@ class NucleotideStretch():
             nucleotides_string=''.join(self.nucleotides)
 
             # split the nucleotide sequence
-            nucleotides_before=nucleotides_string[:nucleotide_idx]
+            if triplet_position==1:
+                nucleotides_before=nucleotides_string[nucleotide_idx-30:nucleotide_idx]
+                nucleotides_after=nucleotides_string[nucleotide_idx+1:nucleotide_idx+33]
+            elif triplet_position==2:
+                nucleotides_before=nucleotides_string[nucleotide_idx-31:nucleotide_idx]
+                nucleotides_after=nucleotides_string[nucleotide_idx+1:nucleotide_idx+32]
+            elif triplet_position==3:
+                nucleotides_before=nucleotides_string[nucleotide_idx-32:nucleotide_idx]
+                nucleotides_after=nucleotides_string[nucleotide_idx+1:nucleotide_idx+31]
             nucleotide_original=nucleotides_string[nucleotide_idx]
-            nucleotides_after=nucleotides_string[nucleotide_idx+1:]
 
             permutations=['a','c','t','g']
 
-            # don't consider the original nucleotide
-            permutations.remove(nucleotide_original)
+            # only consider the original triplet once
+            if triplet_position in (1,3):
+                 permutations.remove(nucleotide_original)
 
         else:
 
@@ -232,16 +246,13 @@ class NucleotideStretch():
             nucleotide_idx=(3*(triplet_idx))
 
             # split the nucleotide sequence
-            nucleotides_before=''.join(self.nucleotides[:nucleotide_idx])
+            nucleotides_before=''.join(self.nucleotides[nucleotide_idx-30:nucleotide_idx])
             tmp=self.nucleotides[nucleotide_idx:nucleotide_idx+3]
             triplet_original=''.join(i for i in tmp)
-            nucleotides_after=''.join(self.nucleotides[nucleotide_idx+3:])
+            nucleotides_after=''.join(self.nucleotides[nucleotide_idx+3:nucleotide_idx+33])
 
             # codons is a numpy array, so convert to a list so that remove will work
             permutations=self.codons.tolist()
-
-            # remove the original triplet so only 63 permutations will be considered
-            permutations.remove(triplet_original)
 
         first_pass=True
 
@@ -251,7 +262,15 @@ class NucleotideStretch():
             query_sequence=nucleotides_before+new_sequence+nucleotides_after
 
             # find out the resulting new triplet
-            new_triplet=[query_sequence[i:i+3] for i in range(0,len(query_sequence),3)][triplet_idx]
+            if triplet_position:
+                if triplet_position==1:
+                    new_triplet=new_sequence+nucleotides_after[:2]
+                elif triplet_position==2:
+                    new_triplet=nucleotides_before[-1]+new_sequence+nucleotides_after[0]
+                elif triplet_position==3:
+                    new_triplet=nucleotides_before[-2:]+new_sequence
+            else:
+                new_triplet=new_sequence
 
             # ..and therefore the new amino acid
             new_aminoacid=self.triplet_to_amino_acid[new_triplet]
@@ -261,6 +280,9 @@ class NucleotideStretch():
 
             # work out which row this codon belongs to (we already know that the col==triplet_idx)
             row=numpy.where(self.codons==new_triplet)[0][0]
+
+            # if total>0:
+            #     print(nucleotides_before,new_sequence,nucleotides_after,aminoacid_number, triplet_idx, nucleotide_idx,triplet_idx+1-10,original_triplet,new_triplet,row,total,len(query_sequence))
 
             # store the number of sequences in the final 2D array
             self.arrays["number_genomes"][(row,triplet_idx)]=total
@@ -291,12 +313,8 @@ class NucleotideStretch():
 
         query_string=nucleotides_string.upper()
 
-        # print(url_front+query_string+url_end)
-
         # call the Web API
         r=requests.get(url_front+query_string+url_end)
-
-        # print(r.text)
 
         # parse the returned data
         result=json.loads(r.text)
@@ -336,7 +354,7 @@ class NucleotideStretch():
         # create a Boolean array of only those positions where sequences have been identified
         positive_elements=self.arrays["number_genomes"]>0
 
-        for key in ['amino_acid_position','original_triplet','new_triplet','number_nucleotide_changes','mutation','number_genomes','number_reference_genomes','original_amino_acid','new_amino_acid','synonymous','non_synonymous']:
+        for key in ['amino_acid_position','original_triplet','new_triplet','number_nucleotide_changes','mutation','number_genomes','original_amino_acid','new_amino_acid','synonymous','non_synonymous']:
             data_dict[key]=(self.arrays[key][positive_elements]).tolist()
 
         self.df=pandas.DataFrame(data=data_dict)
