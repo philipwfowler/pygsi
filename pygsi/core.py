@@ -172,6 +172,60 @@ class NucleotideStretch():
         # save the dictionary to the specified file
         numpy.save(filename, data)
 
+    def calculate_metrics(self):
+
+        # create a dataset only containing mutations
+        mutations=self.df.loc[self.df.mutation!="-"]
+
+        self.df_mutations_sum=mutations.groupby('amino_acid_position').number_genomes.sum()
+        self.df_mutations_num=mutations.groupby('amino_acid_position').number_genomes.count()
+        self.df_mutations_max=mutations.groupby('amino_acid_position').number_genomes.max()
+        self.df_nucleotide_changes_max=mutations.groupby('amino_acid_position').number_nucleotide_changes.max()
+
+        synonymous=self.mutations.loc[self.mutations.synonymous==True]
+        self.df_synonymous_sum=synonymous.groupby('synonymous').number_genomes.sum()
+
+        non_synonymous=self.mutations.loc[self.mutations.non_synonymous==True]
+        self.df_non_synonymous_sum=synonymous.groupby('synonymous').number_genomes.sum()
+        # https://github.com/adelq/dnds
+
+    def _plot_scatter_residues(self,data_series,filename,logscale=False):
+
+        x=[]
+        y=[]
+        for i in range(1,num_amino_acids):
+            x.append(i)
+            if i in data_series.keys():
+                y.append(data_series[i])
+            else:
+                y.append(0)
+
+        # create a dataset solely of wildtype
+        df1=self.df.loc[self.df.mutation=="-"]
+
+        # approxmate the number of reference sequences as the mean across this dataset
+        number_reference_sequences=numpy.mean(df1.number_genomes)
+
+        y=numpy.array(y)/number_reference_sequences
+
+
+        fig = plt.figure(figsize=(self.number_amino_acids/100., 4))
+
+        axis = plt.gca()
+        axis.grid(b=True,which='major',axis='y',ls='dashed')
+        if logscale:
+            axis.set_yscale("log")#, nonposy='clip')
+            axis.set_ylim([.9/number_reference_sequences,1])
+        else:
+            axis.set_ylim([0,1])
+        axis.set_xticks(numpy.arange(0, number_reference_sequences, 100))
+        axis.set_xlim([1,self.number_amino_acids])
+        axis.tick_params(axis='y', colors='white')
+        axis.set_xticklabels(numpy.arange(0, number_reference_sequences, 100),visible=False)
+
+        plt.scatter(x,y,c='#e41a1c',marker='.')
+
+        plt.savefig(filename,bbox_inches='tight',transparent=True)
 
     def __repr__(self):
         """ Change so that the print() function outputs a summary of the instance.
