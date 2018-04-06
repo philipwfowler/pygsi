@@ -4,6 +4,7 @@ import numpy
 import json
 import requests
 import pandas
+import matplotlib.pyplot as plt
 
 class NucleotideStretch():
 
@@ -181,24 +182,49 @@ class NucleotideStretch():
         self.df_mutations_num=mutations.groupby('amino_acid_position').number_genomes.count()
         self.df_mutations_max=mutations.groupby('amino_acid_position').number_genomes.max()
         self.df_nucleotide_changes_max=mutations.groupby('amino_acid_position').number_nucleotide_changes.max()
+        self.df_nucleotide_changes_num=mutations.groupby('amino_acid_position').number_nucleotide_changes.count()
 
-        synonymous=self.mutations.loc[self.mutations.synonymous==True]
-        self.df_synonymous_sum=synonymous.groupby('synonymous').number_genomes.sum()
+        return(True)
 
-        non_synonymous=self.mutations.loc[self.mutations.non_synonymous==True]
-        self.df_non_synonymous_sum=synonymous.groupby('synonymous').number_genomes.sum()
+        # synonymous=self.mutations.loc[self.mutations.synonymous==True]
+        # self.df_synonymous_sum=synonymous.groupby('synonymous').number_genomes.sum()
+        #
+        # non_synonymous=self.mutations.loc[self.mutations.non_synonymous==True]
+        # self.df_non_synonymous_sum=synonymous.groupby('synonymous').number_genomes.sum()
         # https://github.com/adelq/dnds
 
-    def _plot_scatter_residues(self,data_series,filename,logscale=False):
+    def plot_metrics(self,stem=None,colour='#e41a1c'):
+
+        if self.gene_name=='rpoB':
+            mark_rdrr=True
+        else:
+            mark_rdrr=False
+
+
+        self._plot_scatter_residues(self.df_mutations_max,"pdf/fig-"+self.gene_name+"-mutations-max-lin.pdf",logscale=False,colour=colour,tick_labels=False,mark_rdrr=mark_rdrr)
+        self._plot_scatter_residues(self.df_mutations_max,"pdf/fig-"+self.gene_name+"-mutations-max-log.pdf",logscale=True,colour=colour,tick_labels=False,mark_rdrr=mark_rdrr)
+
+        self._plot_scatter_residues(self.df_mutations_sum,"pdf/fig-"+self.gene_name+"-mutations-sum-lin.pdf",logscale=False,colour=colour,tick_labels=False,mark_rdrr=mark_rdrr)
+        self._plot_scatter_residues(self.df_mutations_sum,"pdf/fig-"+self.gene_name+"-mutations-sum-log.pdf",logscale=True,colour=colour,tick_labels=False,mark_rdrr=mark_rdrr)
+
+        self._plot_scatter_residues(self.df_mutations_num,"pdf/fig-"+self.gene_name+"-mutations-num.pdf",logscale=False,colour=colour,y_range=(-1,24),y_ticks=[0,25,10],tick_labels=False,mark_rdrr=mark_rdrr)
+
+        self._plot_scatter_residues(self.df_nucleotide_changes_max,"pdf/fig-"+self.gene_name+"-nucleotide_changes-max.pdf",logscale=False,colour=colour,y_range=(-0.2,3.2),tick_labels=False,y_ticks=[0,4,1],mark_rdrr=mark_rdrr)
+
+    def _plot_scatter_residues(self,data_series,filename,logscale=False,colour=None,tick_labels=False,y_range=False,y_ticks=False,mark_rdrr=False):
 
         x=[]
         y=[]
-        for i in range(1,num_amino_acids):
+        for i in range(1,self.number_amino_acids):
             x.append(i)
             if i in data_series.keys():
                 y.append(data_series[i])
             else:
                 y.append(0)
+
+        fig = plt.figure(figsize=(self.number_amino_acids/300., 1.25))
+
+        axis = plt.gca()
 
         # create a dataset solely of wildtype
         df1=self.df.loc[self.df.mutation=="-"]
@@ -206,26 +232,43 @@ class NucleotideStretch():
         # approxmate the number of reference sequences as the mean across this dataset
         number_reference_sequences=numpy.mean(df1.number_genomes)
 
-        y=numpy.array(y)/number_reference_sequences
-
-
-        fig = plt.figure(figsize=(self.number_amino_acids/100., 4))
-
-        axis = plt.gca()
-        axis.grid(b=True,which='major',axis='y',ls='dashed')
-        if logscale:
-            axis.set_yscale("log")#, nonposy='clip')
-            axis.set_ylim([.9/number_reference_sequences,1])
+        if not y_range:
+            y=numpy.array(y)/number_reference_sequences
+            if logscale:
+                axis.set_yscale("log")
+                axis.set_ylim([.9/number_reference_sequences,1])
+                y_range=(0,1)
+            else:
+                y_range=(0,1)
+                axis.set_ylim(y_range)
         else:
-            axis.set_ylim([0,1])
+            axis.set_ylim(y_range)
+
+        if y_ticks:
+            axis.set_yticks(numpy.arange(y_ticks[0],y_ticks[1],y_ticks[2]))
+
+        if mark_rdrr:
+            if not logscale:
+                y_value=0.8*y_range[1]
+            else:
+                y_value=0.1*y_range[1]
+            plt.plot([429,452],[y_value,y_value],color='black',lw=3,zorder=0)
+
+        axis.grid(b=True,which='major',axis='y',ls='dashed')
+
         axis.set_xticks(numpy.arange(0, number_reference_sequences, 100))
         axis.set_xlim([1,self.number_amino_acids])
-        axis.tick_params(axis='y', colors='white')
-        axis.set_xticklabels(numpy.arange(0, number_reference_sequences, 100),visible=False)
 
-        plt.scatter(x,y,c='#e41a1c',marker='.')
+        if not tick_labels:
+            # axis.tick_params(axis='y', colors='white')
+            axis.yaxis.set_ticklabels([])
+            axis.set_xticklabels(numpy.arange(0, number_reference_sequences, 100),visible=False)
+
+        plt.scatter(x,y,s=4,c=colour,marker='.',zorder=10)
 
         plt.savefig(filename,bbox_inches='tight',transparent=True)
+
+        plt.close()
 
     def __repr__(self):
         """ Change so that the print() function outputs a summary of the instance.
