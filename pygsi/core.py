@@ -173,6 +173,34 @@ class NucleotideStretch():
 
     def calculate_metrics(self):
 
+        self.dnds_lookup={}
+        for codon in self.codons:
+            original_amino_acid=self.triplet_to_amino_acid[codon]
+            syn=0
+            nonsyn=0
+            for position in [1,2,3]:
+                for base in ['a','t','c','g']:
+                    new_codon=codon[:position-1]+base+codon[position:]
+                    if new_codon!=codon:
+                        new_amino_acid=self.triplet_to_amino_acid[new_codon]
+                        if new_amino_acid==original_amino_acid:
+                            syn+=1
+                        else:
+                            nonsyn+=1
+            self.dnds_lookup[codon]=(nonsyn,syn)
+
+        def normalise_number_genomes(row):
+            tmp=self.dnds_lookup[row['original_triplet']]
+            if row['non_synonymous']:
+                return (row['number_genomes']/tmp[0])
+            else:
+                if tmp[1]==0:
+                    return 1e99
+                else:
+                    return (row['number_genomes']/tmp[1])
+
+        self.df['normalised_number_genomes']=self.df.apply(normalise_number_genomes,axis=1)
+
         # create a dataset only containing mutations
         mutations=self.df.loc[self.df.mutation!="-"]
 
@@ -182,14 +210,33 @@ class NucleotideStretch():
         self.df_nucleotide_changes_max=mutations.groupby('amino_acid_position').number_nucleotide_changes.max()
         self.df_nucleotide_changes_num=mutations.groupby('amino_acid_position').number_nucleotide_changes.count()
 
-        return(True)
+        synonymous=mutations.loc[mutations.synonymous==True]
+        self.df_syn_sum=synonymous.groupby('amino_acid_position').normalised_number_genomes.sum()
 
-        # synonymous=self.mutations.loc[self.mutations.synonymous==True]
-        # self.df_synonymous_sum=synonymous.groupby('synonymous').number_genomes.sum()
-        #
-        # non_synonymous=self.mutations.loc[self.mutations.non_synonymous==True]
-        # self.df_non_synonymous_sum=synonymous.groupby('synonymous').number_genomes.sum()
-        # https://github.com/adelq/dnds
+        non_synonymous=mutations.loc[mutations.non_synonymous==True]
+        self.df_non_syn_sum=non_synonymous.groupby('amino_acid_position').normalised_number_genomes.sum()
+
+        dnds={}
+        # only need to consider amino acid positions where there is a non-synonymous mutation, as by definition is there isn't, then dsdn=0
+        for i in self.df_non_syn_sum.keys():
+
+            # check if there are also some synonymous mutations at this position
+            if i in self.df_syn_sum.keys():
+
+                dnds[i]=self.df_non_syn_sum[i]/self.df_syn_sum[i]
+
+            # otherwise there are no synoymous mutations so set to zero as not measurable (inf)
+            else:
+
+                dnds[i]=0.
+
+        else:
+
+            dnds[i]=0.
+
+        self.df_dnds=pandas.Series(data=dnds)
+
+        return(True)
 
     def __repr__(self):
         """ Change so that the print() function outputs a summary of the instance.
