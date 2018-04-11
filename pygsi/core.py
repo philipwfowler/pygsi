@@ -171,7 +171,7 @@ class NucleotideStretch():
         # save the dictionary to the specified file
         numpy.save(filename, data)
 
-    def calculate_metrics(self):
+    def calculate_metrics(self,threshold=10):
 
         self.dnds_lookup={}
         for codon in self.codons:
@@ -190,12 +190,17 @@ class NucleotideStretch():
             self.dnds_lookup[codon]=(nonsyn,syn)
 
         def normalise_number_genomes(row):
+
+            # find out the tuple of (nonsyn,syn) which adds up to nine
             tmp=self.dnds_lookup[row['original_triplet']]
+
+            # if this is a non-synonmous mutation, then normalise
             if row['non_synonymous']:
                 return (row['number_genomes']/tmp[0])
             else:
+                # if it isn't, and there are no routes to make a synonmous mutation
                 if tmp[1]==0:
-                    return 1e99
+                    return (row['number_genomes'])
                 else:
                     return (row['number_genomes']/tmp[1])
 
@@ -223,12 +228,21 @@ class NucleotideStretch():
             # check if there are also some synonymous mutations at this position
             if i in self.df_syn_sum.keys():
 
-                dnds[i]=self.df_non_syn_sum[i]/self.df_syn_sum[i]
+                # now check to see if there are enough!
+                if (self.df_non_syn_sum[i]>=threshold) and (self.df_syn_sum[i]>=threshold):
+
+                    dnds[i]=self.df_non_syn_sum[i]/self.df_syn_sum[i]
+
+                # if there aren't, just set to zero
+                else:
+                    dnds[i]=0
 
             # otherwise there are no synoymous mutations so set to zero as not measurable (inf)
             else:
-
-                dnds[i]=0.
+                if (self.df_non_syn_sum[i]>=threshold):
+                    dnds[i]=150.
+                else:
+                    dnds[i]=0
 
         else:
 
