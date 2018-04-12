@@ -228,12 +228,20 @@ class NucleotideStretch():
             # check if there are also some synonymous mutations at this position
             if i in self.df_syn_sum.keys():
 
-                # now check to see if there are enough!
-                if (self.df_non_syn_sum[i]>=threshold) and (self.df_syn_sum[i]>=threshold):
+                # now check to see if there are enough non-syn to register a signal!
+                if (self.df_non_syn_sum[i]>=threshold):
 
-                    dnds[i]=self.df_non_syn_sum[i]/self.df_syn_sum[i]
+                    # and enough syn
+                    if (self.df_syn_sum[i]>=threshold):
 
-                # if there aren't, just set to zero
+                        dnds[i]=self.df_non_syn_sum[i]/self.df_syn_sum[i]
+
+                    # otherwise there are some syn, but not enough, and enough non-syn
+                    else:
+
+                        dnds[i]=150
+
+                # if there aren't enough non-syn, just set to zero as there isn't enough for a signal
                 else:
                     dnds[i]=0
 
