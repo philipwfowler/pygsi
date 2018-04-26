@@ -35,6 +35,8 @@ class NucleotideStretch():
         # if the user has given a nucleotide sequence, initialise all the various arrays etc
         if nucleotide_sequence:
 
+            self.mutations=pandas.DataFrame(columns=['ena_accession','mutation','amino_acid_position','new_triplet','original_triplet'])
+
             # how many nucleotides have we been given?
             self.number_nucleotides=len(nucleotide_sequence)
 
@@ -78,8 +80,11 @@ class NucleotideStretch():
 
             # now interrogate the bigsi web instance to see how many genomes exist with the specified reference sequence
             # (this can take 5-10 seconds)
-            self.number_reference_genomes=self._interrogate_bigsi(nucleotide_sequence)
+            # sra_samples=self._interrogate_bigsi(nucleotide_sequence)
+            #
+            # self.number_reference_genomes=len(sra_samples)
 
+            self.number_reference_genomes=28500
             # instantiate the arrays dictionary that is going to hold all the numpy 2D arrays (this maybe could be done with pandas)
             self.arrays={}
 
@@ -363,7 +368,20 @@ class NucleotideStretch():
             new_aminoacid=self.triplet_to_amino_acid[new_triplet]
 
             # count how many occurences are in the SRA by calling the BIGSI instance
-            total=self._interrogate_bigsi(query_sequence)
+            sra_samples=self._interrogate_bigsi(query_sequence)
+
+            if original_triplet!=new_triplet:
+                mut="%s%s%s" % (original_aminoacid,aminoacid_number,new_aminoacid)
+                if original_aminoacid==new_aminoacid:
+                    synonmous=True
+                else:
+                    synoymous=False
+                for ena_accession in sra_samples:
+                    self.mutations=self.mutations.append({'ena_accession':ena_accession, 'mutation':mut,'new_triplet':new_triplet, 'original_triplet':original_triplet, 'amino_acid_position':aminoacid_number, 'original_amino_acid':original_aminoacid, 'new_amino_acid':new_aminoacid,'synoymous':synoymous},ignore_index=True)
+
+            total=len(sra_samples)
+
+
 
             # work out which row this codon belongs to (we already know that the col==triplet_idx)
             row=numpy.where(self.codons==new_triplet)[0][0]
@@ -431,7 +449,7 @@ class NucleotideStretch():
                             if (predicted_species_amount/100.)>=self.species_min_amount:
                                 sra_samples.append(sra_sample_number)
 
-        return(len(sra_samples))
+        return(sra_samples)
 
     def _create_dataframe(self):
         """Create a Pandas dataframe that lists all the mutations and their occurences, one per line"""
