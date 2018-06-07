@@ -80,11 +80,11 @@ class NucleotideStretch():
 
             # now interrogate the bigsi web instance to see how many genomes exist with the specified reference sequence
             # (this can take 5-10 seconds)
-            # sra_samples=self._interrogate_bigsi(nucleotide_sequence)
-            #
-            # self.number_reference_genomes=len(sra_samples)
+            sra_samples=self._interrogate_bigsi(nucleotide_sequence)
 
-            self.number_reference_genomes=28500
+            self.number_reference_genomes=len(sra_samples)
+
+            # self.number_reference_genomes=28500
             # instantiate the arrays dictionary that is going to hold all the numpy 2D arrays (this maybe could be done with pandas)
             self.arrays={}
 
@@ -373,7 +373,7 @@ class NucleotideStretch():
             if original_triplet!=new_triplet:
                 mut="%s%s%s" % (original_aminoacid,aminoacid_number,new_aminoacid)
                 if original_aminoacid==new_aminoacid:
-                    synonmous=True
+                    synoymous=True
                 else:
                     synoymous=False
                 for ena_accession in sra_samples:
