@@ -55,6 +55,9 @@ class NucleotideStretch():
             self.species_name=species_name
             self.species_min_amount=species_min_amount
 
+            # insist that the species_min_amount must lie within 0 and 1 (the default is 0.8)
+            assert (0 < self.species_min_amount <= 1), "species_min_amount must be > 0 but ≤ 1"
+
             # store the nucleotides in lower case to differentiate them from amino acids
             nucleotides_string=nucleotide_sequence.lower()
 
@@ -266,7 +269,7 @@ class NucleotideStretch():
         return(True)
 
     def __repr__(self):
-        """ Change so that the print() function outputs a summary of the instance.
+        """ Overload so that the print() function outputs a summary of the instance.
         """
 
         amino_acids_string=''.join(self.amino_acids)
@@ -280,7 +283,7 @@ class NucleotideStretch():
         return("%s\n%s gene\n%s to %s\n%s\n%s\n%i genomes found with this sequence" % (species,self.gene_name,amino_acids_string[0]+str(self.first_amino_acid_position),amino_acids_string[-1]+str(self.first_amino_acid_position+self.number_amino_acids),amino_acids_string,nucleotides_string,self.number_reference_genomes))
 
     def __len__(self):
-        """ Change so len() simply returns the number of nucleotides stored within the instance of the class.
+        """ Overload so len() simply returns the number of nucleotides stored within the instance of the class.
         """
         return(len(self.nucleotides))
 
@@ -380,8 +383,6 @@ class NucleotideStretch():
                     self.mutations=self.mutations.append({'ena_accession':ena_accession, 'mutation':mut,'new_triplet':new_triplet, 'original_triplet':original_triplet, 'amino_acid_position':aminoacid_number, 'original_amino_acid':original_aminoacid, 'new_amino_acid':new_aminoacid,'synoymous':synoymous},ignore_index=True)
 
             total=len(sra_samples)
-
-
 
             # work out which row this codon belongs to (we already know that the col==triplet_idx)
             row=numpy.where(self.codons==new_triplet)[0][0]
