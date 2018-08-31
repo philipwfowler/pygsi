@@ -34,4 +34,4 @@ oxa1.save("dat/oxa1.npy")
 
 # save the Pandas dataset to a CSV and DTA file
 oxa1.df.to_csv("dat/oxa1.csv")
-oxa1.df.to_stata("dat/oxa1-oxa1.dta")
+oxa1.df.to_stata("dat/oxa1.dta")
