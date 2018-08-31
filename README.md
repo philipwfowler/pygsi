@@ -8,6 +8,10 @@ This citation will be updated when this paper is published.
 
 As part of their paper, the authors have made available [a web portal](https://bigsi.io), allowing individual nucleotide strings to be entered, with the results returned in a few seconds. This Python3 class allows this website to be interrogated programmatically, allowing one to systematically study the universe of small variations of the original nucleotide sequence X. Specifically, through the `permuate_positions()` method of the `NucleotideSequence` class, sequences with the three alternative nucleotides substituted can be queried against the BIGSI instance, allowing for example, all sequences with one SNP to be identified. Alternatively, the other 63 triplets from the codon table can be tried at each position. 
 
+## Citation
+
+[![DOI](https://zenodo.org/badge/117247246.svg)](https://zenodo.org/badge/latestdoi/117247246)
+
 ## Approach
 
 It is important to know at a high level how the BIGSI index is interrogated as then you will understand some of the limitations of the approach. We pass to BIGSI the triplet we wish to examine for variation flanked by 30 bases on either side (or equivalently, a single amino acid flanked by 10 residues). Conceptually this can be represented as 
