@@ -10,6 +10,8 @@ As part of their paper, the authors have made available [a web portal](https://b
 
 ## Citation
 
+If you use the pygsi package, please cite using the DOI below (in addition to the BIGSI paper referenced above).
+
 [![DOI](https://zenodo.org/badge/117247246.svg)](https://zenodo.org/badge/latestdoi/117247246)
 
 ## Approach
