@@ -380,7 +380,7 @@ class NucleotideStretch():
                 else:
                     synoymous=False
                 for ena_accession in sra_samples:
-                    self.mutations=self.mutations.append({'ena_accession':ena_accession, 'mutation':mut,'new_triplet':new_triplet, 'original_triplet':original_triplet, 'amino_acid_position':aminoacid_number, 'original_amino_acid':original_aminoacid, 'new_amino_acid':new_aminoacid,'synoymous':synoymous},ignore_index=True)
+                    self.mutations=self.mutations.append({'ena_accession':ena_accession, 'mutation':mut,'new_triplet':new_triplet, 'original_triplet':original_triplet, 'amino_acid_position':aminoacid_number, 'original_amino_acid':original_aminoacid, 'new_amino_acid':new_aminoacid,'synoymous':synoymous,'species0_name':sra_samples[ena_accession][0][0],'species0_percentage':sra_samples[ena_accession][0][1],'species1_name':sra_samples[ena_accession][1][0],'species1_percentage':sra_samples[ena_accession][1][1]},ignore_index=True)
 
             total=len(sra_samples)
 
@@ -411,7 +411,7 @@ class NucleotideStretch():
         """
 
         # create an empty list to store the list of sample numbers from the Short Read Archive
-        sra_samples=[]
+        sra_samples={}
 
         # define the URL of the BIGSI instance
         url_front="http://api.bigsi.io/search?seq="
@@ -428,27 +428,35 @@ class NucleotideStretch():
         # loop through the samples
         for sra_sample_number in result[query_string]['results']:
 
-            # if no target species is specified, simply count 'em
-            if self.species_name is None:
-                sra_samples.append(sra_sample_number)
+            # pull out the list of predicted species, and their predicted amounts
+            predicted_species_list=result[query_string]['results'][sra_sample_number]["species"].split("; ")
 
+            predicted_species_name_0 = predicted_species_list[0].split(" : ")[0]
+            predicted_species_amount_0 = float(predicted_species_list[0].split(" : ")[1].split("%")[0])
+
+            if len(predicted_species_list)>2:
+                predicted_species_name_1 = predicted_species_list[1].split(" : ")[0]
+                predicted_species_amount_1 = float(predicted_species_list[1].split(" : ")[1].split("%")[0])
+
+            record_sample=False
+            if self.species_name is not None:
+                if predicted_species_name_0==self.species_name:
+                    if (predicted_species_amount_0/100.)>=self.species_min_amount:
+                        record_sample=True
+                elif len(predicted_species_list)>2:
+                    if predicted_species_name_1==self.species_name:
+                        if (predicted_species_amount_1/100.)>=self.species_min_amount:
+                            record_sample=True
             else:
-                # pull out the list of predicted species, and their predicted amounts
-                predicted_species_list=result[query_string]['results'][sra_sample_number]["species"].split("; ")
+                record_sample=True
 
-                for line in predicted_species_list:
+            if record_sample:
+                if sra_sample_number not in sra_samples.keys():
+                    if len(predicted_species_list)>2:
+                        sra_samples[sra_sample_number]=[(predicted_species_name_0,predicted_species_amount_0),(predicted_species_name_1,predicted_species_amount_1)]
+                    else:
+                        sra_samples[sra_sample_number]=[(predicted_species_name_0,predicted_species_amount_0),(None,None)]
 
-                    tmp=line.split(" : ")
-
-                    if len(tmp)>1:
-
-                        predicted_species_name=tmp[0]
-                        predicted_species_amount=float(tmp[1].split("%")[0])
-
-                        # only keep the sample if it matches the target species and is above the threshold amount
-                        if predicted_species_name==self.species_name:
-                            if (predicted_species_amount/100.)>=self.species_min_amount:
-                                sra_samples.append(sra_sample_number)
 
         return(sra_samples)
 
