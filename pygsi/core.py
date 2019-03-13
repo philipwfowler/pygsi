@@ -152,6 +152,14 @@ class NucleotideStretch():
             # now that all the arrays are loaded, re-create the Pandas dataframe (bit hacky)
             self._create_dataframe()
 
+            # if you thought that was hacky, try this
+            stem=filename.split("-summary.npy")[0]
+
+            print(stem)
+            
+            self.mutations=pandas.read_csv(stem+"-mutations.csv")
+
+
     def save(self,filename):
         """ Save all the variables and arrays belonging to the class. This allows the instance to be re-created
         by using the load() method"""
