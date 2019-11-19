@@ -156,7 +156,7 @@ class NucleotideStretch():
             stem=filename.split("-summary.npy")[0]
 
             print(stem)
-            
+
             self.mutations=pandas.read_csv(stem+"-mutations.csv")
 
 
@@ -439,24 +439,28 @@ class NucleotideStretch():
             # pull out the list of predicted species, and their predicted amounts
             predicted_species_list=result[query_string]['results'][sra_sample_number]["species"].split("; ")
 
-            predicted_species_name_0 = predicted_species_list[0].split(" : ")[0]
-            predicted_species_amount_0 = float(predicted_species_list[0].split(" : ")[1].split("%")[0])
-
-            if len(predicted_species_list)>2:
-                predicted_species_name_1 = predicted_species_list[1].split(" : ")[0]
-                predicted_species_amount_1 = float(predicted_species_list[1].split(" : ")[1].split("%")[0])
+            print(predicted_species_list)
 
             record_sample=False
-            if self.species_name is not None:
-                if predicted_species_name_0==self.species_name:
-                    if (predicted_species_amount_0/100.)>=self.species_min_amount:
-                        record_sample=True
-                elif len(predicted_species_list)>2:
-                    if predicted_species_name_1==self.species_name:
-                        if (predicted_species_amount_1/100.)>=self.species_min_amount:
+
+            if ":" in predicted_species_list[0]:
+                predicted_species_name_0 = predicted_species_list[0].split(" : ")[0]
+                predicted_species_amount_0 = float(predicted_species_list[0].split(" : ")[1].split("%")[0])
+
+                if len(predicted_species_list)>2:
+                    predicted_species_name_1 = predicted_species_list[1].split(" : ")[0]
+                    predicted_species_amount_1 = float(predicted_species_list[1].split(" : ")[1].split("%")[0])
+
+                if self.species_name is not None:
+                    if predicted_species_name_0==self.species_name:
+                        if (predicted_species_amount_0/100.)>=self.species_min_amount:
                             record_sample=True
-            else:
-                record_sample=True
+                    elif len(predicted_species_list)>2:
+                        if predicted_species_name_1==self.species_name:
+                            if (predicted_species_amount_1/100.)>=self.species_min_amount:
+                                record_sample=True
+                else:
+                    record_sample=True
 
             if record_sample:
                 if sra_sample_number not in sra_samples.keys():
