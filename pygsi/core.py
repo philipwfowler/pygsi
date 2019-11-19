@@ -380,7 +380,7 @@ class NucleotideStretch():
                 else:
                     synoymous=False
                 for ena_accession in sra_samples:
-                    self.mutations=self.mutations.append({'ena_accession':ena_accession, 'mutation':mut,'new_triplet':new_triplet, 'original_triplet':original_triplet, 'amino_acid_position':aminoacid_number, 'original_amino_acid':original_aminoacid, 'new_amino_acid':new_aminoacid,'synoymous':synoymous,'species0_name':sra_samples[ena_accession][0][0],'species0_percentage':sra_samples[ena_accession][0][1],'species1_name':sra_samples[ena_accession][1][0],'species1_percentage':sra_samples[ena_accession][1][1]},ignore_index=True)
+                    self.mutations=self.mutations.append({'ena_accession':ena_accession, 'mutation':mut,'new_triplet':new_triplet, 'original_triplet':original_triplet, 'amino_acid_position':aminoacid_number, 'original_amino_acid':original_aminoacid, 'new_amino_acid':new_aminoacid,'synoymous':synoymous,'species_name':sra_samples[ena_accession][0],'species_percentage':sra_samples[ena_accession][1]},ignore_index=True)
 
             total=len(sra_samples)
 
@@ -431,31 +431,32 @@ class NucleotideStretch():
             # pull out the list of predicted species, and their predicted amounts
             predicted_species_list=result[query_string]['results'][sra_sample_number]["species"].split("; ")
 
-            predicted_species_name_0 = predicted_species_list[0].split(" : ")[0]
-            predicted_species_amount_0 = float(predicted_species_list[0].split(" : ")[1].split("%")[0])
-
-            if len(predicted_species_list)>2:
-                predicted_species_name_1 = predicted_species_list[1].split(" : ")[0]
-                predicted_species_amount_1 = float(predicted_species_list[1].split(" : ")[1].split("%")[0])
-
             record_sample=False
-            if self.species_name is not None:
-                if predicted_species_name_0==self.species_name:
-                    if (predicted_species_amount_0/100.)>=self.species_min_amount:
-                        record_sample=True
-                elif len(predicted_species_list)>2:
-                    if predicted_species_name_1==self.species_name:
-                        if (predicted_species_amount_1/100.)>=self.species_min_amount:
-                            record_sample=True
-            else:
-                record_sample=True
+
+            if len(predicted_species_list)>0:
+
+                for current_species_entry in predicted_species_list:
+
+                    if record_sample is False:
+
+                        try:
+
+                            current_species_name=current_species_entry.split(" : ")[0]
+                            current_species_amount=float(current_species_entry.split(" : ")[1].split("%")[0])
+
+                            if self.species_name is not None:
+                                if current_species_name==self.species_name:
+                                    if (current_species_amount/100.)>=self.species_min_amount:
+                                        record_sample=True
+                            else:
+                                record_sample=True
+
+                        except:
+                            continue
 
             if record_sample:
                 if sra_sample_number not in sra_samples.keys():
-                    if len(predicted_species_list)>2:
-                        sra_samples[sra_sample_number]=[(predicted_species_name_0,predicted_species_amount_0),(predicted_species_name_1,predicted_species_amount_1)]
-                    else:
-                        sra_samples[sra_sample_number]=[(predicted_species_name_0,predicted_species_amount_0),(None,None)]
+                    sra_samples[sra_sample_number]=(current_species_name,current_species_amount)
 
 
         return(sra_samples)
