@@ -1,10 +1,10 @@
 # pygsi: a Python class to interrogate BIGISI 
 
-As discussed in the preprint below, whilst the Short Read Archive (SRA) holds nearly half a million bacterial and virial genomes, it is extremely difficult to, given a nucleotide sequence X, answer the question "how many times has X been deposited in the SRA?".
+As discussed in the paper (and preprint) below, whilst the Short Read Archive (SRA) holds nearly half a million bacterial and virial genomes, it is extremely difficult to, given a nucleotide sequence X, answer the question "how many times has X been deposited in the SRA?".
+
+> Bradley P, den Bakker HC, Rocha EPC, McVean G, Iqbal Z (2019) Ultrafast search of all deposited bacterial and viral genomic data. Nat Biotechnol [37(2):152–159](https://dx.doi.org/10.1038/s41587-018-0010-1).
 
 > Bradley P, Den Bakker HC, Rocha EPC, McVean G, Iqbal Z. Real-time search of all bacterial and viral genomic data. 2017. [biorXiv](https://dx.doi.org/10.1101/234955)
-
-This citation will be updated when this paper is published.
 
 As part of their paper, the authors have made available [a web portal](https://bigsi.io), allowing individual nucleotide strings to be entered, with the results returned in a few seconds. This Python3 class allows this website to be interrogated programmatically, allowing one to systematically study the universe of small variations of the original nucleotide sequence X. Specifically, through the `permuate_positions()` method of the `NucleotideSequence` class, sequences with the three alternative nucleotides substituted can be queried against the BIGSI instance, allowing for example, all sequences with one SNP to be identified. Alternatively, the other 63 triplets from the codon table can be tried at each position. 
 
